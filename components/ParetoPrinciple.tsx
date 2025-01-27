@@ -102,7 +102,7 @@ export function ParetoPrinciple() {
   return (
     <Card className="w-full max-w-md mx-auto mt-10">
       <CardHeader>
-        <CardTitle>Pareto's Principle Task Manager</CardTitle>
+        <CardTitle>Paretos Principle Task Manager</CardTitle>
       </CardHeader>
       <CardContent>
         {error && <p className="text-red-500">{error}</p>}
