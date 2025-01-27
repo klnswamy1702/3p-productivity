@@ -57,17 +57,23 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Check } from 'lucide-react';
 
+type Task = {
+  text: string;
+  completed: boolean;
+};
+
 export function ParetoPrinciple() {
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [error, setError] = useState(null);
-  const [editingTask, setEditingTask] = useState(null);
-  const [editedTaskText, setEditedTaskText] = useState('');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<number | null>(null);
+  const [editedTaskText, setEditedTaskText] = useState<string>('');
 
   const handleAddTask = () => {
+    setError(null); // Clear previous errors
     if (tasks.length < 3) {
       if (newTask.trim() !== '') {
-        setTasks([...tasks, { text: newTask, completed: false }]);
+        setTasks([...tasks, { text: newTask.trim(), completed: false }]);
         setNewTask('');
       } else {
         setError('Please enter a task');
@@ -77,23 +83,29 @@ export function ParetoPrinciple() {
     }
   };
 
-  const handleEditTask = (index, taskText) => {
+  const handleEditTask = (index: number, taskText: string) => {
     setEditingTask(index);
     setEditedTaskText(taskText);
   };
 
-  const handleSaveTask = (index) => {
+  const handleSaveTask = (index: number) => {
+    if (editedTaskText.trim() === '') {
+      setError('Task cannot be empty');
+      return;
+    }
     const updatedTasks = [...tasks];
-    updatedTasks[index].text = editedTaskText;
+    updatedTasks[index].text = editedTaskText.trim();
     setTasks(updatedTasks);
     setEditingTask(null);
+    setError(null); // Clear error after saving
   };
 
   const handleCancelEditTask = () => {
     setEditingTask(null);
+    setEditedTaskText(''); // Clear edited task text
   };
 
-  const handleMarkTaskAsComplete = (index) => {
+  const handleMarkTaskAsComplete = (index: number) => {
     const updatedTasks = [...tasks];
     updatedTasks[index].completed = !updatedTasks[index].completed;
     setTasks(updatedTasks);
@@ -106,60 +118,58 @@ export function ParetoPrinciple() {
       </CardHeader>
       <CardContent>
         {error && <p className="text-red-500">{error}</p>}
-        <Input
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add new task"
-          className="w-full"
-        />
-        <Button onClick={handleAddTask} className="mt-2">
-          Add Task
-        </Button>
+        <div className="mb-4">
+          <Input
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            placeholder="Add new task"
+            className="w-full"
+          />
+          <Button onClick={handleAddTask} className="mt-2">
+            Add Task
+          </Button>
+        </div>
         <ul className="list-none mt-4">
           {tasks.map((task, index) => (
             <li key={index} className="flex items-center mb-2">
               {editingTask === index ? (
-                <div className="flex items-center">
+                <div className="flex items-center w-full">
                   <Input
                     value={editedTaskText}
                     onChange={(e) => setEditedTaskText(e.target.value)}
                     className="w-full"
                   />
-                  <Button
-                    onClick={() => handleSaveTask(index)}
-                    className="ml-2"
-                  >
+                  <Button onClick={() => handleSaveTask(index)} className="ml-2">
                     Save
                   </Button>
-                  <Button
-                    onClick={handleCancelEditTask}
-                    className="ml-2"
-                  >
+                  <Button onClick={handleCancelEditTask} className="ml-2">
                     Cancel
                   </Button>
                 </div>
               ) : (
-                <span
-                  className={`text-lg ${
-                    task.completed ? 'text-gray-500 line-through' : 'text-black'
-                  }`}
-                >
-                  {task.text}
-                </span>
-              )}
-              <Button
-                onClick={() => handleMarkTaskAsComplete(index)}
-                className="ml-2"
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-              {editingTask !== index && (
-                <Button
-                  onClick={() => handleEditTask(index, task.text)}
-                  className="ml-2"
-                >
-                  Edit
-                </Button>
+                <div className="flex items-center w-full">
+                  <span
+                    className={`text-lg ${
+                      task.completed ? 'text-gray-500 line-through' : 'text-black'
+                    }`}
+                  >
+                    {task.text}
+                  </span>
+                  <Button
+                    onClick={() => handleMarkTaskAsComplete(index)}
+                    className="ml-2"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  {editingTask !== index && (
+                    <Button
+                      onClick={() => handleEditTask(index, task.text)}
+                      className="ml-2"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
               )}
             </li>
           ))}
